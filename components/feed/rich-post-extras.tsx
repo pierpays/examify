@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type ImageRow = {
@@ -60,6 +60,8 @@ export default function RichPostExtras({
   const [editAudience, setEditAudience] = useState<"examify" | "connections">(audience);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
+  const [shouldLoadExtras, setShouldLoadExtras] = useState(false);
+  const extrasSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const isOwner = authorId === viewerId;
   const canPin = isOwner || viewerRole === "admin";
@@ -86,9 +88,33 @@ export default function RichPostExtras({
   }
 
   useEffect(() => {
+    const node = extrasSentinelRef.current;
+    if (!node) return;
+
+    if (!("IntersectionObserver" in window)) {
+      setShouldLoadExtras(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadExtras(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [postId]);
+
+  useEffect(() => {
+    if (!shouldLoadExtras) return;
     loadExtras();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
+  }, [postId, shouldLoadExtras]);
 
   async function vote(optionId: string) {
     setWorking(true);
@@ -155,6 +181,8 @@ export default function RichPostExtras({
 
   return (
     <>
+      <div ref={extrasSentinelRef} className="h-px" aria-hidden="true" />
+
       {(isPinned || editedAt || (scheduledAt && new Date(scheduledAt) > new Date())) && (
         <div className="mt-3 flex flex-wrap gap-2">
           {isPinned && (
@@ -183,7 +211,7 @@ export default function RichPostExtras({
             onChange={(event) => setEditBody(event.target.value)}
             maxLength={2000}
             rows={4}
-            className="mt-3 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
+            className="mt-3 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base sm:text-sm"
           />
           <select
             value={editAudience}
@@ -192,9 +220,9 @@ export default function RichPostExtras({
                 event.target.value as "examify" | "connections"
               )
             }
-            className="mt-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="mt-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-base sm:text-sm"
           >
-            <option value="examify">🌐 Examify</option>
+            <option value="examify">🌐 Examtify</option>
             <option value="connections">👥 Connections only</option>
           </select>
           <div className="mt-3 flex gap-2">
@@ -202,7 +230,7 @@ export default function RichPostExtras({
               type="button"
               disabled={working}
               onClick={saveEdit}
-              className="rounded-xl bg-[#2563EB] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+              className="min-h-11 rounded-xl bg-[#2563EB] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
             >
               Save changes
             </button>
@@ -213,7 +241,7 @@ export default function RichPostExtras({
                 setEditBody(body ?? "");
                 setEditAudience(audience);
               }}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold"
+              className="min-h-11 rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold"
             >
               Cancel
             </button>
@@ -234,6 +262,8 @@ export default function RichPostExtras({
               key={`${url}-${index}`}
               src={url}
               alt={`Post image ${index + 1}`}
+              loading="lazy"
+              decoding="async"
               className={`w-full object-cover ${
                 shownImages.length === 1
                   ? "max-h-[540px]"
@@ -251,7 +281,7 @@ export default function RichPostExtras({
               key={video.id}
               src={video.video_url}
               controls
-              preload="metadata"
+              preload="none"
               playsInline
               className="max-h-[620px] w-full bg-black"
             />
@@ -287,7 +317,7 @@ export default function RichPostExtras({
                   type="button"
                   disabled={working || pollClosed}
                   onClick={() => vote(option.option_id)}
-                  className={`relative w-full overflow-hidden rounded-xl border p-3 text-left transition disabled:cursor-default ${
+                  className={`relative min-h-11 w-full overflow-hidden rounded-xl border p-3 text-left transition disabled:cursor-default ${
                     option.viewer_voted
                       ? "border-violet-400 bg-white"
                       : "border-slate-200 bg-white hover:border-violet-300"
@@ -328,7 +358,7 @@ export default function RichPostExtras({
             <button
               type="button"
               onClick={() => setEditing((value) => !value)}
-              className="text-[#2563EB]"
+              className="min-h-11 text-[#2563EB]"
             >
               ✎ Edit post
             </button>
@@ -339,7 +369,7 @@ export default function RichPostExtras({
               type="button"
               disabled={working}
               onClick={togglePin}
-              className="text-[#2563EB] disabled:opacity-50"
+              className="min-h-11 text-[#2563EB] disabled:opacity-50"
             >
               {isPinned ? "Unpin post" : "📌 Pin post"}
             </button>
