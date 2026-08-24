@@ -1,0 +1,3 @@
+alter table public.exam_attempts
+add column student_result_email_sent_at timestamptz,
+add column teacher_result_email_sent_at timestamptz;
