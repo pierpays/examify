@@ -63,6 +63,13 @@ a, button { -webkit-tap-highlight-color: transparent; }
   filter: brightness(0.97);
 }
 
+/* Keep long feeds cheap to render, especially on mobile. The browser can skip
+   layout/paint work for cards that are far outside the viewport. */
+.examify-shell article[id^="post-"] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 680px;
+}
+
 /* Keep forms crisp against the softer page background. */
 .examify-shell input,
 .examify-shell textarea,
@@ -75,4 +82,25 @@ a, button { -webkit-tap-highlight-color: transparent; }
   border-color: #2563eb;
   outline: 3px solid rgba(37, 99, 235, 0.10);
   outline-offset: 0;
+}
+
+/* iOS Safari can zoom the page when focusing controls smaller than 16px.
+   Keep phone inputs at a comfortable size while preserving desktop sizing. */
+@media (max-width: 639px) {
+  .examify-shell input,
+  .examify-shell textarea,
+  .examify-shell select {
+    font-size: 16px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
