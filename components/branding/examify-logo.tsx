@@ -23,11 +23,11 @@ export function ExamifyMark({ className = "h-10 w-10" }: { className?: string })
 
 export default function ExamifyLogo({ href = "/", compact = false, inverse = false, className = "" }: { href?: string; compact?: boolean; inverse?: boolean; className?: string }) {
   return (
-    <Link href={href} className={`inline-flex items-center gap-2.5 ${className}`} aria-label="Examify home">
+    <Link href={href} className={`inline-flex items-center gap-2.5 ${className}`} aria-label="Examtify home">
       <ExamifyMark className={compact ? "h-8 w-8" : "h-10 w-10"} />
       {!compact && (
         <span className="leading-none">
-          <span className={`block text-xl font-extrabold tracking-tight ${inverse ? "text-white" : "text-[#0F172A]"}`}>Examify</span>
+          <span className={`block text-xl font-extrabold tracking-tight ${inverse ? "text-white" : "text-[#0F172A]"}`}>Examtify</span>
           <span className="mt-1 block text-[8px] font-bold uppercase tracking-[0.18em]">
             <span className="text-[#2563EB]">Learn.</span>{" "}
             <span className="text-[#7C3AED]">Connect.</span>{" "}
