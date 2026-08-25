@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type AdminUser = {
   id: string;
@@ -65,7 +66,7 @@ export default function AdminUsersPage() {
       <div className="mx-auto max-w-6xl">
         <p className="text-sm font-medium text-slate-500">Examtify Administration</p>
         <h1 className="mt-1 text-3xl font-bold">Users</h1>
-        <p className="mt-2 text-sm text-slate-600">Search, edit, disable, re-enable, or permanently delete Examtify accounts.</p>
+        <p className="mt-2 text-sm text-slate-600">Search, view, edit, disable, re-enable, or permanently delete Examtify accounts.</p>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto]">
           <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, username, or email" className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3" />
@@ -94,6 +95,9 @@ export default function AdminUsersPage() {
                     {user.is_disabled && user.disabled_reason && <p className="mt-2 text-sm text-red-700">Reason: {user.disabled_reason}</p>}
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    {user.role !== "institution" && user.role !== "admin" && (
+                      <Link href={`/people/${user.id}`} className="rounded-lg bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">View profile</Link>
+                    )}
                     <button onClick={() => setEditing({ ...user })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold">Edit</button>
                     <button disabled={busy === user.id} onClick={() => user.is_disabled ? patchUser({ is_disabled: false }, user.id) : patchUser({ is_disabled: true, disabled_reason: window.prompt("Reason for disabling this account:", "Account under investigation.") || "Account under investigation." }, user.id)} className={`rounded-lg px-3 py-2 text-sm font-semibold ${user.is_disabled ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>{user.is_disabled ? "Re-enable" : "Disable"}</button>
                     <button disabled={busy === user.id} onClick={() => deleteUser(user)} className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white">Delete</button>
